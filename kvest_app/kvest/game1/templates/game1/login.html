@@ -1,0 +1,127 @@
+{% extends 'game1/base.html' %}
+{% load static %}
+
+
+{% block css %}
+<link rel="stylesheet" href="{% static "game1/css/login_style.css" %}">
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+
+    {% if request.user.is_authenticated %}
+        <meta http-equiv='refresh' content='0; URL={% url "home"%}'>
+    {% endif %}
+
+   
+
+<style>
+    html,
+body {
+  height: 100%;
+}
+
+body {
+  display: -ms-flexbox;
+  display: -webkit-box;
+  display: flex;
+  -ms-flex-align: center;
+  -ms-flex-pack: center;
+  -webkit-box-align: center;
+  align-items: center;
+  -webkit-box-pack: center;
+  justify-content: center;
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #f5f5f5;
+}
+
+.form-signin {
+  width: 100%;
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-signin .checkbox {
+  font-weight: 400;
+}
+.form-signin .form-control {
+  position: relative;
+  box-sizing: border-box;
+  height: auto;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-signin .form-control:focus {
+  z-index: 2;
+}
+.form-signin input[type="text"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.form-signin input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+</style>
+
+
+<div class="container">
+    <div class="d-flex justify-content-center h-100 text-center">
+       
+        <form class="form-signin" action="{% url 'login' %}" method="POST">
+            {% csrf_token %}
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger" role="alert" text-align=center>
+                    {{message}}    
+                </div>
+                {% endfor %}
+            {% endif %}
+
+         {# username password #}
+
+         {% if form.errors %}
+         <div class="alert alert-danger" role="alert" text-align=center>
+            <p>Пароль и имя пользователя не совпадают. Попробуй еще раз!</p>    
+        </div>
+        {% endif %}
+
+        {% if next %}
+            {% if user.is_authenticated %}
+            <div class="alert alert-danger" role="alert" text-align=center>
+                <p>У тебя недостаточно прав для просмотра данной страницы!</p>
+            </div>
+            {% else %}
+            <div class="alert alert-danger" role="alert" text-align=center>
+                <p>Войди или зарегестрируйся для просмотра страницы!</p>
+            </div>
+            {% endif %}
+        {% endif %}
+
+          <img class="mb-4" src="https://images-na.ssl-images-amazon.com/images/I/61DQ2k1uOXL._SL1500_.jpg" alt="" width="72" height="72">
+          <h1 class="h3 mb-3 font-weight-normal">Оставь надежду, всяк сюда входящий</h1>
+          <label for="username" class="sr-only">Имя пользователя</label>
+          <input type="username" id="username" class="form-control" placeholder="Имя пользователя" required="" autofocus="" name='username'>
+          <label for="password" class="sr-only">Пароль</label>
+          <input type="password" id="password" class="form-control" placeholder="Пароль" required="" name='password'>
+          
+          <input class="btn btn-lg btn-dark btn-block" type="submit" value="Войти"></input><br>
+          или <br><a href="{% url 'signup' %}">Зарегестрироваться</a>
+          
+        </form>
+  
+
+
+    </div>
+</div>
+
+
+
+
+       
+{% endblock%}

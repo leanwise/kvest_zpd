@@ -1,0 +1,180 @@
+var answer = {selfie:'', place:''};
+
+// CSRF TOKEN
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    }
+});
+
+// END 
+
+
+function readURL(input, item){
+	console.log("a");
+	if(input.files && input.files[0]){
+
+		var reader = new FileReader();
+		reader.onload = function(e){
+			if(item == 'selfie')
+				answer.selfie = e.target.result;
+			if(item == 'place')
+				answer.place = e.target.result;
+			console.log(answer);
+		}
+		reader.readAsDataURL(input.files[0]);
+	}
+}
+
+
+$('#selfie').change(function(){
+    document.getElementById("selfie_btn").innerHTML='Сделать селфи <i class="fas fa-check"></i>';
+	readURL(this, 'selfie');
+});
+
+$('#place').change(function(){
+    document.getElementById("place_btn").innerHTML='Сделать фотографию места <i class="fas fa-check"></i>';
+	readURL(this, 'place');
+});
+
+function get_answer(data){
+	$.ajax({
+		type: "POST",
+		url: 'increment_progress',
+		data: JSON.stringify({answer_id: data.id}),
+		contentType:"application/json; charset=utf-8",
+		data_type: 'json',
+		success: function(response_3){
+			// May be show some message before
+
+			var data_3 = response_3[0];
+			if(data_3.state=="Success"){
+				
+			}else if(data_3.state=="Failed"){
+				$('#exampleModalCenter').modal('show');
+				$('#exampleModalCenter').on('shown.bs.modal', function(e){
+					document.getElementById('modal-body').innerHTML = data_3.msg;
+				});
+				$('#exampleModalCenter').on('hidden.bs.modal', function(e){
+					location.reload();
+				});
+			}
+			
+									
+		}
+	});
+}
+
+function disable_all(){
+			var selfie = document.getElementById('selfie').setAttribute('disabled', 'disabled');
+			var place = document.getElementById('place').setAttribute('disabled', 'disabled');
+			var get = document.getElementById('get_mission').setAttribute('disabled', 'disabled');
+		}
+
+
+$('#get_mission').on('click', function(){
+	
+	if(answer.selfie && answer.place)
+	{
+		
+		var data = JSON.stringify({Answers:answer});
+		$.ajax({
+			type: "POST",
+			url: "post_answer",
+			data: data,
+			contentType: "application/json; charset=utf-8",
+			data_type: 'json',
+			success: function(response){
+				console.log(response[0]);
+				var data = response[0];
+				console.log(data);
+				if(data.state=="Success")
+				{
+					disable_all();
+					document.getElementById('msg').innerHTML="Ожидайте!";
+					var checkAnswer = setInterval(function(){
+						$.ajax({
+							type:"POST",
+							url: "check_answer",
+							data: JSON.stringify({answer_id: data.id}),
+							contentType: "application/json; charset=utf-8",
+							data_type: 'json',
+							success: function(response_2){
+								var data_2 = response_2[0];
+								console.log(data_2.state);
+								if(data_2.state==true){
+									clearInterval(checkAnswer);
+									$('#exampleModalCenter').modal('show');
+									$('#exampleModalCenter').on('shown.bs.modal', function(e){
+										document.getElementById('modal-body').innerHTML = data_2.msg;
+									});
+									$('#exampleModalCenter').on('hidden.bs.modal', function(e){
+										location.reload();
+									});
+								}
+								else if(data_2.state==false){
+									clearInterval(checkAnswer);
+									$('#exampleModalCenter').modal('show');
+									$('#exampleModalCenter').on('shown.bs.modal', function(e){
+										document.getElementById('exampleModalLongTitle').innerHTML = "Ошибка!";
+										document.getElementById('modal-body').innerHTML = data_2.msg;
+									});
+									$('#exampleModalCenter').on('hidden.bs.modal', function(e){
+										location.reload();
+									});
+
+								}
+								else if(data_2.state==null){
+
+								}
+							}
+						});
+					}, 3000);
+
+					
+				}
+				else if(data.state=="blocked"){
+					location.reload();
+					document.getElementById('msg').innerHTML="Ответ уже был послан!";
+				}
+				else{
+					document.getElementById('msg').innerHTML="Что-то пошло не так, попробуйте перезагрузить страницу!";
+				}
+			}
+
+		});
+	}
+	else{
+		document.getElementById('error').style.display = "block";
+	}
+
+});
+
+
+
+
+

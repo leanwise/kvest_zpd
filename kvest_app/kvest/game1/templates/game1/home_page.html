@@ -1,0 +1,96 @@
+{% extends 'game1/base.html' %}
+{% load static %}
+{% block header %}Hello{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'game1/css/homepage_style.css' %}">
+{% endblock %}
+{% block content %}
+
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-danger" role="alert" text-align=center>
+{{message}}
+</div>
+{% endfor %}
+{% endif %}
+
+
+<div class="container team_list">
+	<br>
+	<h2>Список команд</h2>
+	<div class="row">
+		<div class="table-responsive">
+		<table class="table">
+			<thead class="thead-dark">
+				<th scope="col">Название команды</th>
+				<th scope="col">Кол-во игроков</th>
+				<th scope="col" align=center>Вход</th>
+			</thead>
+			<tbody>
+		{% for team in teams %}
+			<tr>
+
+					<th>{{team.name}}</th>
+					<th>{{team.playerCount}}/8</th>
+                    <th>
+                            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#Modal" data-whatever="{{team.id}}">Присоединиться!</button>
+					</th>
+			</tr>
+		{% endfor %}
+
+		
+
+
+		<!-- Modal -->
+<div class="modal fade" id="Modal" ta bindex="-1" role="dialog" aria-labelledby="ModalCenterTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalCenterTitle">Введите секретный ключ!</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="" type="POST" id="my_form">
+  	      <div class="modal-body">
+	      	
+	      	{% csrf_token %}
+	        <input type="text" class="form-control" placeholder="секретный ключ" id="password" name="password">
+	        
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Отмена</button>
+	        <button type="submit" class="btn btn-primary">Подтвердить</button>
+	      </div>
+	  </form>
+    </div>
+  </div>
+</div>
+		
+</div>
+		</table>
+		</tbody>
+
+			
+	</div>
+</div>
+
+
+
+
+
+<script>
+	document.addEventListener('DOMContentLoaded', function(){
+	    $('#Modal').on('show.bs.modal', function(event){
+	    	var button = $(event.relatedTarget)
+  			var recipient = button.data('whatever')
+  			var modal = $(this)
+  			var url = "/check_group_pass/"+recipient;
+  			modal.find('#my_form').attr("action", url);
+		});
+	});
+			
+</script>
+
+
+{% endblock %}
